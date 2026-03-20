@@ -1,0 +1,198 @@
+import customtkinter as ctk
+from tkinter import messagebox
+
+# DADOS DA CONTA
+Rhuan = 200.00
+senhaRhuan = "1234"
+
+usuario_logado = ""
+saldo = Rhuan
+
+# APARÊNCIA
+ctk.set_appearance_mode('dark')
+ctk.set_default_color_theme('green')
+
+# JANELA
+app = ctk.CTk()
+app.title('Sistema de login')
+app.geometry('500x400')
+
+# LIMPAR TELA
+def limpar_tela():
+    for coisa in app.winfo_children():
+        coisa.destroy()
+
+# TELA LOGIN
+def tela_login():
+    limpar_tela()
+    
+    ctk.CTkLabel(app, text='Login:', font=("Arial", 25)).pack(pady=10)
+
+    global Entry_usuario
+    Entry_usuario = ctk.CTkEntry(app, placeholder_text='Digite seu usuário:')
+    Entry_usuario.pack(pady=10)
+
+    global Entry_senha
+    Entry_senha = ctk.CTkEntry(app, placeholder_text='Digite sua senha:', show='*')
+    Entry_senha.pack(pady=10)
+
+    check_senha = ctk.CTkCheckBox(
+        app,
+        text="Mostrar senha",
+        command=lambda: Entry_senha.configure(show="" if check_senha.get() else "*")
+    )
+    check_senha.pack(pady=10)
+
+    ctk.CTkButton(app, text='Login', command=validar_login).pack(pady=10)
+    ctk.CTkButton(app, text='Esqueci a senha', command=erro).pack(pady=5)
+    
+def erro():
+    messagebox.showerror("Erro", "Serviço fora de ar")
+
+# VALIDAR LOGIN
+def validar_login():
+    
+    global saldo
+
+    usuario = Entry_usuario.get()
+    senha = Entry_senha.get()
+
+    msg = ctk.CTkLabel(app, text="", font=("Arial", 13))
+    msg.pack(pady=4)
+
+    if not usuario and senha:
+        msg.configure(text="⚠ Preencha todos os campos.", text_color="orange")
+        return
+    
+    elif usuario == "Rhuan" and senha == senhaRhuan:
+        saldo = Rhuan
+        janela_menu_principal_Rhuan()
+        
+    else:
+        msg.configure(text="✘ Usuário ou senha incorretos!", text_color="red")
+
+# MENU PRINCIPAL
+def janela_menu_principal_Rhuan():
+    limpar_tela()
+
+    ctk.CTkLabel(app, text="Bem-vindo, Rhuan.", font=("Arial", 20)).pack(pady=10)
+    ctk.CTkLabel(app, text=f"Saldo: R$ {saldo:.2f}", font=("Arial", 20, "bold")).pack(pady=20)
+
+    ctk.CTkButton(app, text="Sacar", command=tela_de_saque).pack(pady=5)
+    ctk.CTkButton(app, text="Depositar", command=tela_de_depositar).pack(pady=5)
+    ctk.CTkButton(app, text="Transferência", command=tela_de_Transferencia).pack(pady=5)
+    ctk.CTkButton(app, text="Voltar", command=tela_login).pack(pady=5)
+
+# TRANSFERÊNCIA
+def tela_de_Transferencia():
+    limpar_tela()
+
+    ctk.CTkLabel(app, text="Transferência", font=("Arial", 20)).pack(pady=10)
+
+    global entrada_destinatario
+    entrada_destinatario = ctk.CTkEntry(app, placeholder_text="Destinatário:")
+    entrada_destinatario.pack(pady=10)
+
+    global entrada_de_valores
+    entrada_de_valores = ctk.CTkEntry(app, placeholder_text="Valor a transferir:")
+    entrada_de_valores.pack(pady=10)
+
+    ctk.CTkButton(app, text="Enviar", command=transferencia).pack(pady=5)
+    ctk.CTkButton(app, text="Voltar", command=janela_menu_principal_Rhuan).pack(pady=10)
+
+# ENVIAR TRANSFERÊNCIA
+def transferencia():
+    global saldo
+
+    destinatario = entrada_destinatario.get().strip()
+    valor_texto = entrada_de_valores.get().strip()
+
+    msg = ctk.CTkLabel(app, text="", font=("Arial", 13))
+    msg.pack(pady=4)
+
+    if not destinatario or not valor_texto:
+        msg.configure(text="⚠ Preencha todos os campos.", text_color="orange")
+        return
+
+    valor = float(valor_texto.replace(",", "."))
+
+    if valor > saldo:
+        msg.configure(text="✘ Saldo insuficiente!", text_color="red")
+        return
+
+    saldo -= valor
+    msg.configure(text=f"✔ R$ {valor:.2f} enviado para {destinatario}!", text_color="green")
+
+# TELA DE SAQUE
+def tela_de_saque():
+    limpar_tela()
+
+    ctk.CTkLabel(app, text="Efetuar Saque", font=("Arial", 20)).pack(pady=10)
+
+    global entrada_de_valores
+    entrada_de_valores = ctk.CTkEntry(app, placeholder_text="Valor (R$):")
+    entrada_de_valores.pack(pady=10)
+
+    ctk.CTkButton(app, text="Confirmar", command=saque).pack(pady=10)
+    ctk.CTkButton(app, text="Voltar", command=janela_menu_principal_Rhuan).pack(pady=10)
+
+# SAQUE
+def saque():
+    global saldo
+
+    valor_texto = entrada_de_valores.get()
+
+    msg = ctk.CTkLabel(app, text="", font=("Arial", 13))
+    msg.pack(pady=4)
+
+    if not valor_texto:
+        msg.configure(text="⚠ Preencha o campo de valor.", text_color="orange")
+        return
+
+    valor = float(valor_texto.replace(",", "."))
+
+    if valor > saldo:
+        msg.configure(text="✘ Saldo insuficiente!", text_color="red")
+        return
+
+    saldo -= valor
+    msg.configure(text=f"✔ R$ {valor:.2f} sacado com sucesso!", text_color="green")
+
+# TELA DE DEPÓSITO
+def tela_de_depositar():
+    limpar_tela()
+
+    ctk.CTkLabel(app, text="Efetuar depósito", font=("Arial", 20)).pack(pady=10)
+
+    global entrada_de_valores
+    entrada_de_valores = ctk.CTkEntry(app, placeholder_text="Valor (R$):")
+    entrada_de_valores.pack(pady=10)
+
+    ctk.CTkButton(app, text="Confirmar", command=depositar).pack(pady=10)
+    ctk.CTkButton(app, text="Voltar", command=janela_menu_principal_Rhuan).pack(pady=10)
+
+# DEPÓSITO
+def depositar():
+    global saldo
+
+    valor_texto = entrada_de_valores.get()
+
+    msg = ctk.CTkLabel(app, text="", font=("Arial", 13))
+    msg.pack(pady=4)
+
+    if not valor_texto:
+        msg.configure(text="⚠ Preencha o campo de valor.", text_color="orange")
+        return
+
+    valor = float(valor_texto.replace(",", "."))
+
+    if valor > 1000:
+        msg.configure(text="✘ Limite de depósito ultrapassado", text_color="red")
+        return
+
+    saldo += valor
+    msg.configure(text=f"✔ R$ {valor:.2f} depositado com sucesso!", text_color="green")
+
+# INICIAR
+tela_login()
+app.mainloop()
